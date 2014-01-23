@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
 
     sprintf(nonce, "%010x", counter);
 
-    if(counter % 1000000 == 0) {
+    if(counter % 0x07ffff == 0) {
       fprintf(stderr, "%s\n", nonce);
 
       FD_ZERO(&the_fd_set);
@@ -107,11 +107,13 @@ int main(int argc, char *argv[]) {
     sha1_to_hex(result_sha1, result_sha1_hex);
 
     if(strcmp(result_sha1_hex, difficulty) < 0) {
+//    if(counter == 1) {
       // we found something!
-      fprintf(stderr, "I've got something, sir!");
+      fprintf(stderr, "######## I've got something, sir! ########\n");
 
       puts(result_sha1_hex);
       printf(header);
+      printf(nonce);
 
       exit(0);
     }

@@ -100,9 +100,16 @@ def solve
       puts "got something?"
 
       sha1 = rs[0].readline
-      commit = rs[0].read
+
+      # the commit data is written in 2 pieces, so it has to be read in 2 pieces
+      # lol portability and robustness
+      commit = rs[0].read + rs[0].read
+
+      File.open("last_commit.txt", "w") { |f| f.print commit }
       
       success! sha1, commit
+
+      fetch
 
       break
     else
@@ -115,7 +122,6 @@ def solve
         break
       end
     end
-
   end
 
   readers.each do |rdr|

@@ -2,46 +2,39 @@
 
 require 'digest/sha1'
 
-if ARGV.length != 2
-    puts "Usage: $0 <clone_url> <public_username>
-
-A VERY SLOW mining implementation. This should give you an idea of
-where to start, but it probably won't successfully mine you any
-Gitcoins.
-
-Arguments:
-
-<clone_url> is the string you'd pass to git clone (i.e.
-  something of the form username@hostname:path)
-
-<public_username> is the public username provided to you in
-  the CTF web interface."
-    exit
-end
-
 # Set up repo
 # I'm assuming it's already pulled here
-local_path = "./level1"
+local_path = "./current-round"
 Dir.chdir local_path
 
-PUBLIC_USERNAME = ARGV[1]
+PUBLIC_USERNAME = "user-jbdufo2q"
 
 def prepare_index()
     system "perl -i -pe 's/(#{PUBLIC_USERNAME}: )(\d+)/$1 . ($2+1)/e' LEDGER.txt"
     
-    File.open("LEDGER.txt", "r+") do |ledger|
-      contents = ledger.read
+    ledger_contents = File.read "LEDGER.txt"
 
-      unless contents.match PUBLIC_USERNAME
-        puts "adding username"
+    File.open("LEDGER.txt", "w") do |ledger|
+      matcher = /#{PUBLIC_USERNAME}: (\d+)/
+      match = ledger_contents.match(matcher)
+
+      if match
+        ledger_contents.gsub! matcher, "#{PUBLIC_USERNAME}: #{match[1].to_i + 1}"
+        ledger.puts ledger_contents
+      else
+        ledger.puts ledger_contents
         ledger.puts "#{PUBLIC_USERNAME}: 1"
       end
     end
+
+    puts File.read("LEDGER.txt")
 
     system "git add LEDGER.txt"
 end
 
 def solve
+  puts "here we go again..."
+
   # Create a Git tree object reflecting our current working
   # directory
   tree = `git write-tree`.chomp
@@ -76,12 +69,8 @@ def solve
   sha1 = rs[0].readline
   commit = rs[0].read
 
-  IO.popen("xxd", "w") do |io|
-    io.print commit
-  end
-
   puts
-  puts "Mined a Gitcoin with commit: #{sha1}"
+  puts "Mined a Gitcoin with commit id: #{sha1}"
 
   cmd = "git hash-object -t commit --stdin -w"
 
@@ -93,7 +82,19 @@ def solve
  
   system "git reset --hard #{sha1} > /dev/null"
 
-  exit
+  puts "pushing"
+
+  result = system "git push origin master"
+
+  if result
+    puts "success!"
+  else
+    puts "failed :("
+  end
+
+  readers.each do |rdr|
+    rdr.close
+  end
 end
 
 def solve_single(initial_counter, success_fd, tree, parent, timestamp)
@@ -174,6 +175,8 @@ def reset()
     system "git reset --hard origin/master >/dev/null"
 end
 
-reset
-prepare_index
-solve
+loop do
+  reset
+  prepare_index
+  solve
+end

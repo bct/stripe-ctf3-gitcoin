@@ -35,8 +35,8 @@ int main(int argc, char *argv[]) {
   const char *timestamp = argv[4];
   const char *difficulty = argv[5];
 
-  unsigned char object_header[16];
-  unsigned char header[1024];
+  char object_header[16];
+  char header[1024];
 
   header[0] = 0;
 
@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
   strcat(header, head_author);
   strcat(header, head_committer);
 
-  int object_length = strlen(header) + 10;
+  unsigned int object_length = strlen(header) + 10;
 
   // a git object has a header containing the type of the object type and its
   // length in bytes. it took forever to figure this out.
@@ -117,7 +117,7 @@ int main(int argc, char *argv[]) {
     EVP_MD_CTX_copy_ex(&mdctx, basectx);
 
     // update the message digest with our nonce.
-    int md_len;
+    unsigned int md_len;
     EVP_DigestUpdate(&mdctx, nonce, 10);
     EVP_DigestFinal_ex(&mdctx, result_sha1, &md_len);
 

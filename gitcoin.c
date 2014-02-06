@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
 
   fprintf(stderr, "%s\n", header);
 
-  int counter = atoi(initial_counter);
+  unsigned long counter = atol(initial_counter);
 
   // this is used in a select call that times out immediately to see if our
   // parent is still listening. there's probably a better way to do this.
@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
   while(1) {
     counter++;
 
-    sprintf(nonce, "%010x", counter);
+    sprintf(nonce, "%010lx", counter);
 
     if(counter % 0x07ffff == 0) {
       // every once in a while print a status
